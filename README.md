@@ -1,203 +1,352 @@
-# 🌿 吉卜力食谱厨房 (Ghibli Recipe Kitchen)
+# 🍱 吉卜力风格食谱网站 | Ghibli-Style Recipe Website
 
-AI驱动的吉卜力风格食谱生成网站，支持用户登录、食谱搜索和智能生成。
+一个由AI驱动的智能食谱网站，为每个烹饪步骤生成吉卜力风格的漫画插图。通过对话式AI界面发现和生成美味食谱。
 
-## ✨ 核心功能
+An AI-powered recipe website that generates Studio Ghibli-style comic illustrations for each cooking step. Discover and generate delicious recipes through a conversational AI interface.
 
-### 1. AI食谱生成
-- 输入菜名，自动生成完整食谱（食材、步骤、烹饪时间等）
-- 使用Claude Sonnet 4生成专业食谱内容
-- 使用Flux 1.1 Pro生成精美的吉卜力风格美食插图
-- 自动缓存已生成的食谱，避免重复生成
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)
+![AI](https://img.shields.io/badge/AI-Claude%20%26%20Gemini-purple.svg)
 
-### 2. 用户系统
-- 注册/登录功能
-- JWT身份验证
-- 密码加密存储（bcrypt）
-- 仅登录用户可生成食谱
+## ✨ 特性 | Features
 
-### 3. 食谱管理
-- 浏览所有食谱
-- 实时搜索（菜名、描述、食材）
-- 查看详细步骤和食材清单
-- 点赞功能
-- 浏览量统计
+### 🎨 核心功能
+- **对话式AI推荐** - 告诉AI你想吃什么，获得智能食谱推荐
+- **吉卜力风格插图** - 每个烹饪步骤都配有手绘水彩风格的漫画插图
+- **AI实时生成** - 使用Claude Sonnet 4生成食谱内容，Gemini 3 Pro生成图片
+- **智能队列系统** - 用户请求优先级高于批量生成，防止过载
+- **丰富的数据库** - 62+道精选菜谱，涵盖中式、西式、日式料理
 
-### 4. 吉卜力美学设计
-- 温暖的大地色系配色方案
-- 水彩画风格UI设计
-- 漂浮的叶子装饰动画
-- 柔和的阴影和圆角设计
-- 响应式布局，完美适配移动端
+### 🚀 技术亮点
+- **双队列优先级系统** - 用户请求立即处理，批量任务后台运行
+- **超时保护** - 6分钟总超时 + 60秒单图超时，防止API延迟导致失败
+- **智能缓存** - 已生成的食谱立即返回，避免重复生成
+- **错误恢复** - 进程级错误处理，确保服务器稳定运行
+- **步骤限制** - 最多8步，平衡详细度与生成时间
 
-## 🚀 快速开始
+## 🚀 快速开始 | Quick Start
 
-### 访问地址
-**外部访问链接：** https://3000-capy-1769767690860-182316-preview.happycapy.ai
+### 环境要求
+- Node.js >= 18.0.0
+- npm >= 8.0.0
+- AI Gateway API密钥
 
-### 本地运行
+### 安装步骤
 
-1. 安装依赖
+1. **克隆仓库**
+```bash
+git clone https://github.com/Y1fe1-Yang/ghibli-recipe-website.git
+cd ghibli-recipe-website
+```
+
+2. **安装依赖**
 ```bash
 npm install
 ```
 
-2. 启动服务器
+3. **配置环境变量**
 ```bash
-AI_GATEWAY_API_KEY=your_api_key npm start
+# 设置AI Gateway API密钥
+export AI_GATEWAY_API_KEY="your_api_key_here"
 ```
 
-3. 访问应用
-打开浏览器访问：http://localhost:3000
+4. **启动服务器**
+```bash
+# 方式1: 使用启动脚本
+./start.sh
 
-## 📖 使用说明
+# 方式2: 直接运行
+node server/index-v2.js
+```
 
-### 首次使用
-1. 点击右上角"注册"按钮创建账号
-2. 输入用户名、邮箱和密码完成注册
-3. 自动登录后即可使用所有功能
+5. **访问网站**
+```
+打开浏览器访问: http://localhost:3000
+```
 
-### 生成食谱
-1. 点击"✨ 生成食谱"按钮
-2. 输入菜名（必填），如"番茄炒蛋"
-3. 可选填写菜系（如川菜、粤菜）和饮食限制（如素食、无麸质）
-4. 点击"开始生成"，等待30-60秒
-5. AI将生成食谱内容和吉卜力风格插图
+## 📸 效果展示 | Screenshots
 
-### 搜索食谱
-1. 在顶部搜索框输入关键词
-2. 支持搜索菜名、描述、食材
-3. 实时显示搜索结果
+### 主界面 - 对话式交互
+```
+用户: "我想吃点辣的"
+AI: 为您推荐以下辣味美食...
+    🌶️ 麻婆豆腐 - 经典川菜，麻辣鲜香
+    🥔 酸辣土豆丝 - 爽脆开胃
+    🍜 油泼辣子面 - 陕西风味
+```
 
-### 查看食谱详情
-1. 点击任意食谱卡片
-2. 查看完整的食材清单和烹饪步骤
-3. 可以点击❤️按钮点赞
+### 食谱详情 - 分步图解
+每道菜包含：
+- 🎭 精美的主菜插图
+- 📝 详细的食材清单
+- 🎨 每一步的吉卜力风格漫画图
+- 💡 烹饪小贴士
 
-## 🛠 技术栈
-
-### 后端
-- **Node.js + Express** - 服务器框架
-- **JWT** - 身份验证
-- **bcryptjs** - 密码加密
-- **文件存储** - JSON文件存储用户和食谱数据
+## 🛠️ 技术栈 | Tech Stack
 
 ### 前端
-- **原生HTML/CSS/JavaScript** - 无需构建工具
-- **响应式设计** - 完美适配各种设备
-- **吉卜力美学** - 温暖、柔和的视觉风格
+- HTML5 + CSS3
+- Vanilla JavaScript
+- 响应式设计
+
+### 后端
+- Node.js v18+
+- Express.js
+- JSON文件存储
 
 ### AI服务
-- **Claude Sonnet 4** - 食谱内容生成
-- **Flux 1.1 Pro** - 吉卜力风格图片生成
-- **AI Gateway API** - 统一的AI服务接口
+- **文本生成**: Claude Sonnet 4 (Anthropic)
+- **图片生成**: Google Gemini 3 Pro Image
+- **API网关**: AI Gateway Integration
 
-## 📁 项目结构
+### 架构特点
+- RESTful API设计
+- 队列管理系统
+- 优先级调度
+- 异步处理
+- 错误边界
+
+## 🎯 项目结构 | Project Structure
 
 ```
-ghibli-recipe-app/
+ghibli-recipe-website/
 ├── server/
-│   └── index.js          # 后端API服务器
+│   ├── index.js              # 主服务器 (旧版，已弃用)
+│   ├── index-v2.js           # 主服务器 (当前使用，带队列系统)
+│   ├── index-old.js          # 原始版本备份
+│   └── queue-manager.js      # 队列管理模块
 ├── public/
-│   └── index.html        # 前端应用
+│   └── index.html            # 前端界面
 ├── data/
-│   ├── users.json        # 用户数据
-│   └── recipes.json      # 食谱数据
-├── package.json
-└── README.md
+│   ├── recipes.json          # 食谱数据库 (62+ recipes)
+│   └── users.json            # 用户数据
+├── scripts/
+│   └── seed-recipes.js       # 数据初始化脚本
+├── *.sh                      # 批量生成脚本
+├── BUG_FIX_REPORT.md        # 问题修复报告
+├── PROJECT_PROMPT_HISTORY.md # 项目开发历史
+├── COMIC-RECIPE-GUIDE.md    # 漫画食谱指南
+├── IMAGE-FIX-NOTES.md       # 图片修复笔记
+├── QUICK-START.md           # 快速开始指南
+└── package.json             # 依赖配置
 ```
 
-## 🔑 API端点
+## 📚 API文档 | API Documentation
 
-### 认证
-- `POST /api/register` - 用户注册
-- `POST /api/login` - 用户登录
+### 获取所有食谱
+```http
+GET /api/recipes
+```
 
-### 食谱
-- `GET /api/recipes` - 获取所有食谱（支持搜索参数）
-- `GET /api/recipes/:id` - 获取单个食谱
-- `POST /api/recipes/generate` - AI生成食谱（需要登录）
-- `POST /api/recipes/:id/like` - 点赞食谱（需要登录）
-- `POST /api/recipes/:id/view` - 记录浏览量
+### 生成新食谱 (用户请求)
+```http
+POST /api/recipes/generate
+Content-Type: application/json
 
-### 其他
-- `GET /api/health` - 健康检查
+{
+  "dishName": "宫保鸡丁",
+  "isUserRequest": true
+}
+```
 
-## 🎨 设计特色
+### 批量生成食谱
+```http
+POST /api/recipes/batch-generate
+Content-Type: application/json
 
-### 色彩方案
-- 吉卜力绿 (Ghibli Green): `#7FB069`
-- 奶油白 (Cream): `#FFFBF0`
-- 棕色 (Brown): `#8B5A3C`
-- 天空蓝 (Sky): `#A8DADC`
-- 珊瑚红 (Coral): `#E76F51`
-- 鼠尾草绿 (Sage): `#B7C9A7`
+{
+  "dishes": ["麻婆豆腐", "鱼香肉丝", "回锅肉"]
+}
+```
 
-### 字体
-- **Noto Serif SC** - 衬线主字体
-- **Ma Shan Zheng** - 手写风格标题
-- **ZCOOL XiaoWei** - 中文辅助字体
+### 查看队列状态
+```http
+GET /api/queue/status
+```
 
-### 动画效果
-- 漂浮叶子动画
-- 卡片悬停效果
-- 模态框渐入动画
-- Toast通知提示
+响应示例:
+```json
+{
+  "userQueue": 0,
+  "batchQueue": 3,
+  "isProcessing": true,
+  "currentTask": {
+    "dishName": "麻婆豆腐",
+    "type": "batch"
+  },
+  "stats": {
+    "userGenerated": 12,
+    "batchGenerated": 50,
+    "failed": 2,
+    "totalTime": 18500000
+  }
+}
+```
 
-## 💡 使用提示
+### 点赞食谱
+```http
+POST /api/recipes/:id/like
+```
 
-1. **生成时间**：AI生成食谱和图片大约需要30-60秒，请耐心等待
-2. **食谱缓存**：已生成的食谱会自动保存，再次生成同名食谱会直接返回
-3. **搜索技巧**：可以搜索菜名、食材或烹饪方式
-4. **移动端**：网站完全响应式，可在手机上流畅使用
+### 健康检查
+```http
+GET /api/health
+```
 
-## 🔒 数据安全
+## 🔧 核心模块说明 | Core Modules
 
-- 密码使用bcrypt加密存储
-- JWT token有效期7天
-- 所有敏感操作需要身份验证
-- 数据存储在本地JSON文件
+### 队列管理系统 (queue-manager.js)
+```javascript
+class GenerationQueue {
+  userQueue: []      // 用户请求队列 (高优先级)
+  batchQueue: []     // 批量生成队列 (低优先级)
+  isProcessing: bool // 处理状态标志
 
-## 🐛 故障排除
+  addUserRequest()   // 添加用户请求，立即处理
+  addBatchRequest()  // 添加批量请求，排队等待
+  processNext()      // 处理下一个任务
+  generateRecipe()   // 执行实际生成
+}
+```
 
-### 生成食谱失败
-- 检查AI_GATEWAY_API_KEY是否配置正确
-- 查看服务器日志：`tail -f /tmp/ghibli-server.log`
-- 确保网络连接正常
+### 超时配置
+- **总超时**: 6分钟 (360秒) - 足够生成8步食谱
+- **单图超时**: 60秒 - 处理API高峰期延迟
+- **步骤限制**: 最多8步 - 平衡详细度与时间
 
-### 无法登录
-- 检查邮箱和密码是否正确
-- 清除浏览器缓存和localStorage
-- 重新注册账号
+### 错误处理
+```javascript
+process.on('unhandledRejection', handler)  // 捕获未处理的Promise拒绝
+process.on('uncaughtException', handler)   // 捕获未捕获的异常
+try/catch/finally                          // 确保队列持续处理
+```
 
-### 图片加载慢
-- 吉卜力风格图片约1-2MB，首次加载可能较慢
-- 使用浏览器缓存加速后续访问
+## 🎨 生成流程 | Generation Pipeline
 
-## 📝 开发说明
+1. **接收请求** - 用户通过聊天界面描述想吃的菜
+2. **队列调度** - 根据优先级加入对应队列
+3. **内容生成** - Claude Sonnet 4生成食谱内容 (~8秒)
+4. **主图生成** - Gemini 3 Pro生成主菜插图 (~25秒)
+5. **步骤图生成** - 为每步生成漫画插图 (8步 × ~25秒 = ~200秒)
+6. **保存入库** - 存储到recipes.json
+7. **返回响应** - 发送完整食谱数据
 
-### 添加新功能
-1. 后端API在 `server/index.js`
-2. 前端代码在 `public/index.html`
-3. 数据存储在 `data/` 目录
+**总计时间**: 约3.5-5分钟 (API速度影响)
 
-### 自定义样式
-所有CSS变量定义在`:root`中，可轻松修改配色方案。
+## 📊 数据库示例 | Database Schema
 
-### 扩展存储
-当前使用JSON文件存储，可替换为：
-- SQLite
-- MongoDB
-- PostgreSQL
+```json
+{
+  "id": "1770311227833",
+  "name": "蜂蜜柚子茶鸡翅",
+  "description": "酸甜清香的创意鸡翅，柚子香气浓郁",
+  "emoji": "🍯🍗",
+  "cookTime": 45,
+  "difficulty": "简单",
+  "servings": 2,
+  "ingredients": [
+    "鸡翅中 8个",
+    "蜂蜜柚子茶 3大勺",
+    "生抽 2大勺",
+    "..."
+  ],
+  "steps": [
+    "鸡翅中用刀在两面各划2-3刀...",
+    "蒜瓣拍扁切碎，生姜切丝...",
+    "..."
+  ],
+  "tips": "柚子茶中的果肉不要去掉...",
+  "imageUrl": "https://ai-gateway-resource.trickle-lab.tech/images/...",
+  "stepImages": [
+    "https://ai-gateway-resource.trickle-lab.tech/images/...",
+    "https://ai-gateway-resource.trickle-lab.tech/images/...",
+    "..."
+  ],
+  "author": "AI厨房",
+  "createdAt": "2026-02-05T17:07:07.833Z",
+  "likes": 0,
+  "views": 0
+}
+```
 
-## 📄 许可证
+## 🐛 已知问题与修复 | Known Issues & Fixes
 
-MIT License
+### 问题1: 用户请求失败但批量生成成功
+**原因**: 3分钟HTTP超时不足以完成8步生成 (需3.5-5分钟)
 
-## 🤝 贡献
+**修复**:
+- 总超时: 3分钟 → 6分钟 ✅
+- 单图超时: 30秒 → 60秒 ✅
+- 添加进程级错误处理 ✅
+
+详见: [BUG_FIX_REPORT.md](BUG_FIX_REPORT.md)
+
+### 问题2: 服务器在step 6/6崩溃
+**原因**: 未捕获的Promise拒绝导致Node.js进程终止
+
+**修复**:
+- 添加 `unhandledRejection` 处理器
+- 添加 `uncaughtException` 处理器
+- finally块确保队列恢复
+
+## 🔮 未来计划 | Roadmap
+
+- [ ] **流式响应** - 使用Server-Sent Events实时显示生成进度
+- [ ] **异步模式** - 立即返回任务ID，轮询查询结果
+- [ ] **图片缓存** - 缓存生成的图片，加速相似请求
+- [ ] **图片队列** - 独立的图片生成队列，更好的控制
+- [ ] **用户系统** - 注册、登录、收藏夹
+- [ ] **评分评论** - 用户可以对食谱打分和评论
+- [ ] **多语言支持** - 英文、日文界面
+- [ ] **移动端优化** - PWA支持，离线访问
+
+## 📖 文档 | Documentation
+
+- [快速开始指南](QUICK-START.md) - 5分钟上手
+- [漫画食谱指南](COMIC-RECIPE-GUIDE.md) - 插图风格说明
+- [项目开发历史](PROJECT_PROMPT_HISTORY.md) - 完整的prompt工程记录
+- [问题修复报告](BUG_FIX_REPORT.md) - 详细的问题诊断与修复
+- [图片修复笔记](IMAGE-FIX-NOTES.md) - 图片生成优化
+
+## 🤝 贡献 | Contributing
 
 欢迎提交Issue和Pull Request！
 
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启Pull Request
+
+## 📝 开发日志 | Development Log
+
+### v1.0.0 (2026-02-05)
+- ✅ 初始版本发布
+- ✅ 对话式AI推荐系统
+- ✅ 吉卜力风格图片生成
+- ✅ 双队列优先级系统
+- ✅ 62+道食谱数据库
+- ✅ 超时保护与错误恢复
+- ✅ 批量生成脚本
+
+## 🙏 致谢 | Acknowledgments
+
+- **Anthropic** - Claude Sonnet 4 AI模型
+- **Google** - Gemini 3 Pro Image模型
+- **Studio Ghibli** - 插图风格灵感来源
+- **AI Gateway** - API集成服务
+
+## 📧 联系方式 | Contact
+
+- GitHub: [@Y1fe1-Yang](https://github.com/Y1fe1-Yang)
+- 项目地址: [ghibli-recipe-website](https://github.com/Y1fe1-Yang/ghibli-recipe-website)
+
+## 📄 许可证 | License
+
+MIT License
+
 ---
 
-用❤️制作，灵感来自吉卜力工作室的美学风格
+**Built with ❤️ and AI**
+
+由Claude Opus 4.5与开发者协作完成 | Co-created by Claude Opus 4.5 and Developer
