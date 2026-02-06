@@ -15,10 +15,11 @@ class GenerationQueue {
     }
 
     // 添加用户请求（最高优先级）
-    addUserRequest(dishName, resolve, reject) {
-        console.log(`📥 [用户请求] ${dishName} - 立即插入队列前端`);
+    addUserRequest(dishName, language, resolve, reject) {
+        console.log(`📥 [用户请求] ${dishName} (${language}) - 立即插入队列前端`);
         this.userQueue.push({
             dishName,
+            language: language || 'zh',
             type: 'user',
             resolve,
             reject,
@@ -28,9 +29,10 @@ class GenerationQueue {
     }
 
     // 添加批量生成请求（低优先级）
-    addBatchRequest(dishName, resolve, reject) {
+    addBatchRequest(dishName, language, resolve, reject) {
         this.batchQueue.push({
             dishName,
+            language: language || 'zh',
             type: 'batch',
             resolve,
             reject,
@@ -67,7 +69,7 @@ class GenerationQueue {
             });
 
             const result = await Promise.race([
-                this.generateRecipe(task.dishName),
+                this.generateRecipe(task.dishName, task.language),
                 timeoutPromise
             ]);
 

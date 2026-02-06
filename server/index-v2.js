@@ -74,14 +74,15 @@ console.log('✨ Ghibli Recipe Server running on http://localhost:' + PORT);
 console.log('🎨 API Key configured:', !!process.env.AI_GATEWAY_API_KEY ? 'Yes' : 'No');
 
 // 实际生成逻辑 - 注入到队列管理器
-generationQueue.generateRecipe = async function(dishName) {
+generationQueue.generateRecipe = async function(dishName, language = 'zh') {
     const apiKey = process.env.AI_GATEWAY_API_KEY;
     if (!apiKey) {
         throw new Error('AI_GATEWAY_API_KEY not configured');
     }
 
-    // Generate recipe content
-    const recipePrompt = `请为"${dishName}"生成一份详细的中文食谱。
+    // Generate recipe content with language-specific prompts
+    const prompts = {
+        zh: `请为"${dishName}"生成一份详细的中文食谱。
 
 请以JSON格式返回，包含以下字段：
 {
@@ -96,7 +97,27 @@ generationQueue.generateRecipe = async function(dishName) {
   "tips": "烹饪小贴士"
 }
 
-每个步骤的描述要详细，包含具体的动作和状态，方便生成漫画插图。只返回JSON，不要其他内容。`;
+每个步骤的描述要详细，包含具体的动作和状态，方便生成漫画插图。只返回JSON，不要其他内容。`,
+
+        en: `Generate a detailed recipe for "${dishName}" in English.
+
+Return in JSON format with the following fields:
+{
+  "name": "Dish name",
+  "description": "One-line description (under 50 characters)",
+  "emoji": "Appropriate emoji",
+  "cookTime": cooking time in minutes (number),
+  "difficulty": "Easy/Medium/Hard",
+  "servings": number of servings (number),
+  "ingredients": ["Ingredient 1 with amount", "Ingredient 2 with amount"],
+  "steps": ["Detailed description of step 1", "Detailed description of step 2"],
+  "tips": "Cooking tips and tricks"
+}
+
+Each step should be detailed with specific actions and states for comic illustration. Return ONLY JSON, no other content.`
+    };
+
+    const recipePrompt = prompts[language] || prompts.zh;
 
     const recipeResponse = await axios.post(
         'https://ai-gateway.happycapy.ai/api/v1/chat/completions',
@@ -122,10 +143,15 @@ generationQueue.generateRecipe = async function(dishName) {
         throw new Error('Failed to parse recipe JSON');
     }
 
-    console.log(`✓ Recipe content generated with ${recipeData.steps.length} steps`);
+    console.log(`✓ Recipe content generated with ${recipeData.steps.length} steps (${language})`);
 
-    // Generate main dish image
-    const mainImagePrompt = `A beautiful Studio Ghibli style illustration of the finished ${dishName}, featuring the completed dish with warm, inviting colors and soft lighting. The scene should have a cozy, hand-painted aesthetic with detailed food presentation, steam rising from the dish, and a magical, whimsical atmosphere. Watercolor style with rich textures and dreamy ambiance, traditional Chinese kitchen setting.`;
+    // Generate main dish image with language-specific settings
+    const kitchenSettings = {
+        zh: 'traditional Chinese kitchen setting with wooden utensils and bamboo steamers',
+        en: 'modern North American kitchen setting with stainless steel appliances and granite countertops'
+    };
+
+    const mainImagePrompt = `A beautiful Studio Ghibli style illustration of the finished ${dishName}, featuring the completed dish with warm, inviting colors and soft lighting. The scene should have a cozy, hand-painted aesthetic with detailed food presentation, steam rising from the dish, and a magical, whimsical atmosphere. Watercolor style with rich textures and dreamy ambiance, ${kitchenSettings[language] || kitchenSettings.en}.`;
 
     const mainImageResponse = await axios.post(
         'https://ai-gateway.happycapy.ai/api/v1/images/generations',
@@ -193,12 +219,18 @@ generationQueue.generateRecipe = async function(dishName) {
     console.log('✅ All images generated successfully');
 
     // Create recipe object
+    const authorNames = {
+        zh: 'AI厨房',
+        en: 'AI Kitchen'
+    };
+
     const newRecipe = {
         id: Date.now().toString(),
         ...recipeData,
+        language,
         imageUrl,
         stepImages,
-        author: 'AI厨房',
+        author: authorNames[language] || authorNames.zh,
         authorId: 'ai-chef',
         createdAt: new Date().toISOString(),
         likes: 0,
@@ -244,15 +276,18 @@ app.get('/api/recipes', (req, res) => {
 // Generate recipe with QUEUE SYSTEM - 用户请求优先
 app.post('/api/recipes/generate', async (req, res) => {
     try {
-        const { dishName, isUserRequest = true } = req.body;
+        const { dishName, isUserRequest = true, language = 'zh' } = req.body;
 
         if (!dishName) {
             return res.status(400).json({ error: 'Dish name is required' });
         }
 
-        // Check if recipe already exists
+        // Check if recipe already exists (language-specific check)
         const recipes = readRecipes();
-        const existing = recipes.find(r => r.name.toLowerCase() === dishName.toLowerCase());
+        const existing = recipes.find(r =>
+            r.name.toLowerCase() === dishName.toLowerCase() &&
+            (r.language || 'zh') === language
+        );
 
         if (existing) {
             return res.json({ recipe: existing, cached: true });
@@ -261,9 +296,9 @@ app.post('/api/recipes/generate', async (req, res) => {
         // Add to queue based on priority
         const result = await new Promise((resolve, reject) => {
             if (isUserRequest) {
-                generationQueue.addUserRequest(dishName, resolve, reject);
+                generationQueue.addUserRequest(dishName, language, resolve, reject);
             } else {
-                generationQueue.addBatchRequest(dishName, resolve, reject);
+                generationQueue.addBatchRequest(dishName, language, resolve, reject);
             }
         });
 
@@ -280,18 +315,18 @@ app.post('/api/recipes/generate', async (req, res) => {
 // 批量生成API - 低优先级
 app.post('/api/recipes/batch-generate', async (req, res) => {
     try {
-        const { dishes } = req.body;
+        const { dishes, language = 'zh' } = req.body;
 
         if (!Array.isArray(dishes) || dishes.length === 0) {
             return res.status(400).json({ error: 'Dishes array is required' });
         }
 
-        console.log(`📦 批量生成请求: ${dishes.length} 个菜品`);
+        console.log(`📦 批量生成请求: ${dishes.length} 个菜品 (${language})`);
 
         // Add all dishes to batch queue
         const promises = dishes.map(dishName => {
             return new Promise((resolve, reject) => {
-                generationQueue.addBatchRequest(dishName, resolve, reject);
+                generationQueue.addBatchRequest(dishName, language, resolve, reject);
             }).catch(error => ({ error: true, dishName, message: error.message }));
         });
 
