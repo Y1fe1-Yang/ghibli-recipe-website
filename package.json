@@ -1,14 +1,14 @@
 {
-  "name": "ghibli-recipe-app",
-  "version": "1.0.0",
-  "description": "AI-powered Ghibli-style recipe generator with user authentication",
-  "main": "server/index.js",
+  "name": "magic-comic-kitchen",
+  "version": "2.0.0",
+  "description": "AI-powered magic comic style recipe generator with bilingual support (Chinese/English)",
+  "main": "server/index-v2.js",
   "scripts": {
-    "start": "node server/index.js",
-    "dev": "node server/index.js"
+    "start": "node server/index-v2.js",
+    "dev": "node server/index-v2.js"
   },
-  "keywords": ["recipe", "ai", "ghibli", "food"],
-  "author": "",
+  "keywords": ["recipe", "ai", "magic", "comic", "food", "bilingual", "cooking"],
+  "author": "Magic Comic Kitchen Team",
   "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",

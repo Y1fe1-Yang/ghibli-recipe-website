@@ -3,7 +3,7 @@
 const translations = {
     zh: {
         // Header
-        siteTitle: '🌿 吉卜力食谱厨房',
+        siteTitle: '🌿 魔法漫画厨房',
         siteSubtitle: '用AI魔法创造美味',
 
         // Chat Interface
@@ -51,12 +51,31 @@ const translations = {
         // Language
         language: '语言',
         chinese: '中文',
-        english: 'English'
+        english: 'English',
+
+        // Quick Prompts
+        quickPrompt1: '我想吃辣的',
+        quickPrompt2: '有什么快手菜',
+        quickPrompt3: '今天想做川菜',
+        quickPrompt4: '素食料理推荐',
+        quickPrompt5: '适合新手的菜',
+
+        // Recipe Generation
+        generatingRecipe: 'AI正在为您生成"{0}"的魔法漫画风格食谱...',
+        generatingTime: '这可能需要30-60秒，请耐心等待',
+        existing: '已有',
+        generateNew: '生成新',
+        foundExisting: '找到已有食谱！',
+        recipeSuccess: '✨ 食谱生成成功！',
+        generateFailed: '生成失败，请重试',
+
+        // Sections
+        allRecipes: '所有食谱'
     },
 
     en: {
         // Header
-        siteTitle: '🌿 Ghibli Recipe Kitchen',
+        siteTitle: '🌿 Magic Comic Kitchen',
         siteSubtitle: 'Creating Delicious Recipes with AI Magic',
 
         // Chat Interface
@@ -104,7 +123,26 @@ const translations = {
         // Language
         language: 'Language',
         chinese: '中文',
-        english: 'English'
+        english: 'English',
+
+        // Quick Prompts
+        quickPrompt1: 'I want something spicy',
+        quickPrompt2: 'Quick and easy dishes',
+        quickPrompt3: 'Sichuan cuisine today',
+        quickPrompt4: 'Vegetarian recommendations',
+        quickPrompt5: 'Beginner-friendly dishes',
+
+        // Recipe Generation
+        generatingRecipe: 'AI is generating a magic comic style recipe for "{0}"...',
+        generatingTime: 'This may take 30-60 seconds, please wait patiently',
+        existing: 'Existing',
+        generateNew: 'Generate',
+        foundExisting: 'Found existing recipe!',
+        recipeSuccess: '✨ Recipe generated successfully!',
+        generateFailed: 'Generation failed, please try again',
+
+        // Sections
+        allRecipes: 'All Recipes'
     }
 };
 
@@ -139,7 +177,7 @@ class LanguageManager {
             if (value && value[k] !== undefined) {
                 value = value[k];
             } else {
-                console.warn(`Translation key not found: ${key}`);
+                console.warn(`[i18n] Translation key not found: ${key} (language: ${this.currentLang})`);
                 return key;
             }
         }

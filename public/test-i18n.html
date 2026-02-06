@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>i18n Test</title>
+</head>
+<body>
+    <h1>Testing i18n</h1>
+    <div id="result"></div>
+
+    <script src="/i18n.js"></script>
+    <script>
+        const result = document.getElementById('result');
+
+        try {
+            result.innerHTML = '<h2>i18n Loaded: ' + (typeof i18n !== 'undefined') + '</h2>';
+
+            if (typeof i18n !== 'undefined') {
+                result.innerHTML += '<h3>Chinese Translations:</h3>';
+                result.innerHTML += '<p>quickPrompt1: ' + i18n.translations.zh.quickPrompt1 + '</p>';
+                result.innerHTML += '<p>quickPrompt2: ' + i18n.translations.zh.quickPrompt2 + '</p>';
+                result.innerHTML += '<p>quickPrompt3: ' + i18n.translations.zh.quickPrompt3 + '</p>';
+                result.innerHTML += '<p>quickPrompt4: ' + i18n.translations.zh.quickPrompt4 + '</p>';
+                result.innerHTML += '<p>quickPrompt5: ' + i18n.translations.zh.quickPrompt5 + '</p>';
+
+                result.innerHTML += '<h3>English Translations:</h3>';
+                result.innerHTML += '<p>quickPrompt1: ' + i18n.translations.en.quickPrompt1 + '</p>';
+                result.innerHTML += '<p>quickPrompt2: ' + i18n.translations.en.quickPrompt2 + '</p>';
+                result.innerHTML += '<p>quickPrompt3: ' + i18n.translations.en.quickPrompt3 + '</p>';
+                result.innerHTML += '<p>quickPrompt4: ' + i18n.translations.en.quickPrompt4 + '</p>';
+                result.innerHTML += '<p>quickPrompt5: ' + i18n.translations.en.quickPrompt5 + '</p>';
+
+                result.innerHTML += '<h3>i18n.t() test:</h3>';
+                i18n.setLanguage('zh');
+                result.innerHTML += '<p>ZH - i18n.t("quickPrompt1"): ' + i18n.t('quickPrompt1') + '</p>';
+                i18n.setLanguage('en');
+                result.innerHTML += '<p>EN - i18n.t("quickPrompt1"): ' + i18n.t('quickPrompt1') + '</p>';
+            }
+        } catch (error) {
+            result.innerHTML += '<p style="color: red;">Error: ' + error.message + '</p>';
+        }
+    </script>
+</body>
+</html>

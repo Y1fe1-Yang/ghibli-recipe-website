@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Test</title>
+</head>
+<body>
+    <h1>Quick Prompts Test</h1>
+    <div id="prompts">
+        <span class="quick-prompt" id="quickPrompt1"></span>
+        <span class="quick-prompt" id="quickPrompt2"></span>
+        <span class="quick-prompt" id="quickPrompt3"></span>
+    </div>
+
+    <div id="log" style="margin-top: 20px; font-family: monospace;"></div>
+
+    <script src="/i18n.js"></script>
+    <script>
+        const log = document.getElementById('log');
+        function addLog(msg) {
+            log.innerHTML += msg + '<br>';
+        }
+
+        addLog('1. i18n loaded: ' + (typeof i18n !== 'undefined'));
+
+        if (typeof i18n !== 'undefined') {
+            addLog('2. Setting language to EN');
+            i18n.setLanguage('en');
+
+            addLog('3. Testing i18n.t():');
+            for (let i = 1; i <= 3; i++) {
+                const text = i18n.t('quickPrompt' + i);
+                addLog(`   quickPrompt${i} = "${text}"`);
+            }
+
+            addLog('4. Updating DOM elements:');
+            for (let i = 1; i <= 3; i++) {
+                const elem = document.getElementById('quickPrompt' + i);
+                if (elem) {
+                    const text = i18n.t('quickPrompt' + i);
+                    elem.textContent = text;
+                    addLog(`   ✓ Updated quickPrompt${i}`);
+                } else {
+                    addLog(`   ✗ Element quickPrompt${i} not found`);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

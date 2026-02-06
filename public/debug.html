@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Debug i18n</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .section { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>i18n Debug Page</h1>
+    <div id="output"></div>
+
+    <script src="/i18n.js"></script>
+    <script>
+        const output = document.getElementById('output');
+
+        function log(msg, isError = false) {
+            const div = document.createElement('div');
+            div.className = isError ? 'error' : 'success';
+            div.textContent = msg;
+            output.appendChild(div);
+        }
+
+        // Test 1: Check if i18n is loaded
+        log('=== Test 1: i18n Loading ===');
+        if (typeof i18n !== 'undefined') {
+            log('✓ i18n is loaded');
+            log('✓ i18n type: ' + typeof i18n);
+        } else {
+            log('✗ i18n is NOT loaded', true);
+        }
+
+        // Test 2: Check translations object
+        log('\n=== Test 2: Translations Object ===');
+        if (typeof i18n !== 'undefined' && i18n.translations) {
+            log('✓ translations object exists');
+            log('✓ Has zh: ' + ('zh' in i18n.translations));
+            log('✓ Has en: ' + ('en' in i18n.translations));
+        } else {
+            log('✗ translations object missing', true);
+        }
+
+        // Test 3: Check quickPrompt keys
+        log('\n=== Test 3: Quick Prompt Keys ===');
+        if (typeof i18n !== 'undefined' && i18n.translations) {
+            const zhKeys = Object.keys(i18n.translations.zh).filter(k => k.startsWith('quickPrompt'));
+            const enKeys = Object.keys(i18n.translations.en).filter(k => k.startsWith('quickPrompt'));
+            log('✓ ZH quickPrompt keys: ' + zhKeys.join(', '));
+            log('✓ EN quickPrompt keys: ' + enKeys.join(', '));
+
+            // Show actual values
+            log('\n--- ZH Values ---');
+            zhKeys.forEach(key => {
+                log(`  ${key}: "${i18n.translations.zh[key]}"`);
+            });
+
+            log('\n--- EN Values ---');
+            enKeys.forEach(key => {
+                log(`  ${key}: "${i18n.translations.en[key]}"`);
+            });
+        }
+
+        // Test 4: Test i18n.t() function
+        log('\n=== Test 4: i18n.t() Function ===');
+        if (typeof i18n !== 'undefined' && typeof i18n.t === 'function') {
+            log('✓ i18n.t() function exists');
+
+            // Test in Chinese
+            i18n.setLanguage('zh');
+            log(`i18n.t('quickPrompt1') in ZH: "${i18n.t('quickPrompt1')}"`);
+
+            // Test in English
+            i18n.setLanguage('en');
+            log(`i18n.t('quickPrompt1') in EN: "${i18n.t('quickPrompt1')}"`);
+        } else {
+            log('✗ i18n.t() function missing', true);
+        }
+
+        // Test 5: Simulate what updateUIText() does
+        log('\n=== Test 5: Simulating updateUIText() ===');
+        if (typeof i18n !== 'undefined') {
+            i18n.setLanguage('en');
+            for (let i = 1; i <= 5; i++) {
+                const key = 'quickPrompt' + i;
+                const text = i18n.t(key);
+                log(`quickPrompt${i}: "${text}"`);
+            }
+        }
+    </script>
+</body>
+</html>

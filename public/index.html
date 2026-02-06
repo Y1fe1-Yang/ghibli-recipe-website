@@ -889,24 +889,24 @@
                     type="text"
                     class="chat-input"
                     id="chatInput"
-                    placeholder="例如：我想吃辣的、今天想做川菜、有什么快手菜..."
+                    data-i18n-placeholder="chatPlaceholder"
                     onkeypress="handleChatKeypress(event)"
                 >
-                <button class="chat-send-btn" id="chatSendBtn" onclick="sendMessage()">发送</button>
+                <button class="chat-send-btn" id="chatSendBtn" data-i18n="sendButton" onclick="sendMessage()"></button>
             </div>
 
             <div class="quick-prompts">
-                <span class="quick-prompt" onclick="quickChat('我想吃辣的')">我想吃辣的</span>
-                <span class="quick-prompt" onclick="quickChat('有什么快手菜')">有什么快手菜</span>
-                <span class="quick-prompt" onclick="quickChat('今天想做川菜')">今天想做川菜</span>
-                <span class="quick-prompt" onclick="quickChat('素食料理推荐')">素食料理推荐</span>
-                <span class="quick-prompt" onclick="quickChat('适合新手的菜')">适合新手的菜</span>
+                <span class="quick-prompt" id="quickPrompt1" onclick="quickChat(this.textContent)">我想吃辣的</span>
+                <span class="quick-prompt" id="quickPrompt2" onclick="quickChat(this.textContent)">有什么快手菜</span>
+                <span class="quick-prompt" id="quickPrompt3" onclick="quickChat(this.textContent)">今天想做川菜</span>
+                <span class="quick-prompt" id="quickPrompt4" onclick="quickChat(this.textContent)">素食料理推荐</span>
+                <span class="quick-prompt" id="quickPrompt5" onclick="quickChat(this.textContent)">适合新手的菜</span>
             </div>
         </div>
 
         <!-- All Recipes Section -->
         <div class="section-header">
-            <h2 class="section-title">📚 所有食谱</h2>
+            <h2 class="section-title" id="allRecipesTitle">📚 <span data-i18n="allRecipes"></span></h2>
         </div>
         <div id="allRecipes" class="recipes-grid">
             <div class="loading">
@@ -927,10 +927,10 @@
                 <h2 class="modal-title" id="modalTitle"></h2>
                 <div class="recipe-meta" id="modalMeta"></div>
 
-                <h3 class="section-title-modal">🥘 食材清单</h3>
+                <h3 class="section-title-modal">🥘 <span data-i18n="ingredients"></span></h3>
                 <div class="ingredient-list" id="modalIngredients"></div>
 
-                <h3 class="section-title-modal">👨‍🍳 烹饪步骤</h3>
+                <h3 class="section-title-modal">👨‍🍳 <span data-i18n="steps"></span></h3>
                 <div class="steps-list" id="modalSteps"></div>
 
                 <div id="modalTips"></div>
@@ -941,7 +941,7 @@
     </div>
 
     <!-- Load i18n first -->
-    <script src="/i18n.js"></script>
+    <script src="/i18n.js?v=20260206-5"></script>
 
     <script>
         let currentRecipeId = null;
@@ -949,6 +949,41 @@
         let isGenerating = false;
         const API_BASE = '';
         let currentLanguage = 'zh';
+
+        // Helper function to get localized field from recipe
+        function getLocalizedField(recipe, fieldName) {
+            const suffix = currentLanguage === 'zh' ? '_zh' : '_en';
+            const localizedField = fieldName + suffix;
+
+            // Try bilingual format first (name_zh, name_en, author_zh, author_en, etc.)
+            if (recipe[localizedField]) {
+                return recipe[localizedField];
+            }
+
+            // Fall back to old single-language format
+            if (recipe.language === 'en' && currentLanguage === 'en') {
+                return recipe[fieldName] || '';
+            }
+            if ((recipe.language === 'zh' || !recipe.language) && currentLanguage === 'zh') {
+                return recipe[fieldName] || '';
+            }
+
+            // Cross-language fallback: if requesting Chinese but only English available
+            const oppositeSuffix = currentLanguage === 'zh' ? '_en' : '_zh';
+            const oppositeField = fieldName + oppositeSuffix;
+            if (recipe[oppositeField]) {
+                return recipe[oppositeField]; // Better to show wrong language than nothing
+            }
+
+            // Last resort: return the field as-is
+            return recipe[fieldName] || '';
+        }
+
+        // Get array field in correct language
+        function getLocalizedArray(recipe, fieldName) {
+            const result = getLocalizedField(recipe, fieldName);
+            return Array.isArray(result) ? result : [];
+        }
 
         // Language Switching
         function switchLanguage(lang) {
@@ -969,83 +1004,191 @@
         }
 
         function updateUIText() {
-            // Update header
-            document.querySelector('.logo').textContent = i18n.t('siteTitle');
-            document.querySelector('.tagline').textContent = i18n.t('siteSubtitle');
+            try {
+                console.log('[UpdateUI] Updating UI text for language:', currentLanguage);
 
-            // Update chat interface
-            document.querySelector('.chat-title').textContent = '💬 ' +
-                (currentLanguage === 'zh' ? '和AI聊聊你想做什么菜' : 'Chat with AI about what to cook');
-            document.querySelector('.chat-subtitle').textContent =
-                (currentLanguage === 'zh' ? '告诉我你的想法，我会为你推荐美味的食谱' : 'Tell me your thoughts, and I\'ll recommend delicious recipes');
+                // Check if i18n is available
+                if (typeof i18n === 'undefined') {
+                    console.warn('[UpdateUI] i18n not available, skipping i18n translations');
+                    return;
+                }
 
-            // Update welcome message
-            const welcomeMsg = document.querySelector('.message-ai .message-bubble');
-            if (welcomeMsg) {
-                welcomeMsg.innerHTML = i18n.t('welcomeMessage');
+                // Update header
+                const logo = document.querySelector('.logo');
+                const tagline = document.querySelector('.tagline');
+                if (logo) logo.textContent = i18n.t('siteTitle');
+                if (tagline) tagline.textContent = i18n.t('siteSubtitle');
+
+                // Update chat interface
+                const chatTitle = document.querySelector('.chat-title');
+                const chatSubtitle = document.querySelector('.chat-subtitle');
+                if (chatTitle) {
+                    chatTitle.textContent = '💬 ' +
+                        (currentLanguage === 'zh' ? '和AI聊聊你想做什么菜' : 'Chat with AI about what to cook');
+                }
+                if (chatSubtitle) {
+                    chatSubtitle.textContent =
+                        (currentLanguage === 'zh' ? '告诉我你的想法，我会为你推荐美味的食谱' : 'Tell me your thoughts, and I\'ll recommend delicious recipes');
+                }
+
+                // Update welcome message
+                const welcomeMsg = document.querySelector('.message-ai .message-bubble');
+                if (welcomeMsg) {
+                    welcomeMsg.innerHTML = i18n.t('welcomeMessage');
+                }
+
+                // Update input placeholder and send button
+                const chatInput = document.getElementById('chatInput');
+                const sendBtn = document.getElementById('chatSendBtn');
+                if (chatInput) chatInput.placeholder = i18n.t('chatPlaceholder');
+                if (sendBtn) sendBtn.textContent = i18n.t('sendButton');
+
+                // Update quick prompts
+                for (let i = 1; i <= 5; i++) {
+                    const promptBtn = document.getElementById('quickPrompt' + i);
+                    if (promptBtn) {
+                        const text = i18n.t('quickPrompt' + i);
+                        promptBtn.textContent = text;
+                        promptBtn.onclick = () => quickChat(text);
+                        promptBtn.removeAttribute('data-i18n');
+                    }
+                }
+
+                // Update all remaining data-i18n elements
+                document.querySelectorAll('[data-i18n]').forEach(element => {
+                    const key = element.getAttribute('data-i18n');
+                    if (key) {
+                        element.textContent = i18n.t(key);
+                    }
+                });
+
+                // Update all data-i18n-placeholder elements
+                document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+                    const key = element.getAttribute('data-i18n-placeholder');
+                    if (key) {
+                        element.placeholder = i18n.t(key);
+                    }
+                });
+
+                console.log('[UpdateUI] UI text updated successfully');
+            } catch (error) {
+                console.error('[UpdateUI] Error updating UI text:', error);
             }
-
-            // Update input placeholder
-            document.getElementById('chatInput').placeholder = i18n.t('chatPlaceholder');
-            document.getElementById('sendBtn').textContent = i18n.t('sendButton');
         }
 
         async function initApp() {
-            // Initialize language from localStorage
-            currentLanguage = i18n.getCurrentLanguage();
-            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`btn-${currentLanguage}`).classList.add('active');
-            updateUIText();
+            try {
+                console.log('[Init] Starting app initialization...');
 
-            await loadRecipes();
+                // Check if i18n is loaded
+                if (typeof i18n === 'undefined') {
+                    console.error('[Init] ERROR: i18n not loaded!');
+                    currentLanguage = 'zh';
+                } else {
+                    // Initialize language from localStorage
+                    currentLanguage = i18n.getCurrentLanguage();
+                    console.log('[Init] Current language:', currentLanguage);
+                }
+
+                // Update language button states
+                document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+                const activeBtn = document.getElementById(`btn-${currentLanguage}`);
+                if (activeBtn) {
+                    activeBtn.classList.add('active');
+                }
+
+                // Update UI text
+                updateUIText();
+
+                // Load recipes
+                console.log('[Init] Loading recipes...');
+                await loadRecipes();
+                console.log('[Init] App initialization complete!');
+            } catch (error) {
+                console.error('[Init] Initialization error:', error);
+                // Try to load recipes anyway with default language
+                currentLanguage = 'zh';
+                await loadRecipes();
+            }
         }
 
         async function loadRecipes() {
             try {
+                console.log('[LoadRecipes] Fetching recipes...');
                 const response = await fetch(`${API_BASE}/api/recipes`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                // Load ALL recipes, no language filtering
                 allRecipes = await response.json();
+
+                console.log(`[LoadRecipes] Loaded ${allRecipes.length} recipes, displaying in ${currentLanguage}`);
                 renderRecipes(allRecipes, 'allRecipes');
             } catch (error) {
-                console.error('Failed to load recipes:', error);
-                showError('加载食谱失败，请刷新页面重试');
+                console.error('[LoadRecipes] Error:', error);
+                const errorMsg = currentLanguage === 'zh' ? '加载食谱失败，请刷新页面重试' : 'Failed to load recipes, please refresh';
+                showError(errorMsg);
             }
         }
 
         function renderRecipes(recipes, containerId) {
+            console.log(`[Render] Rendering ${recipes.length} recipes to container:`, containerId);
             const container = document.getElementById(containerId);
 
+            if (!container) {
+                console.error(`[Render] ERROR: Container ${containerId} not found!`);
+                return;
+            }
+
             if (recipes.length === 0) {
+                console.log('[Render] No recipes to display, showing empty state');
+
+                const emptyMsg = currentLanguage === 'zh'
+                    ? '还没有食谱哦，和AI聊聊你想做什么菜吧！'
+                    : 'No recipes yet! Chat with AI to create your first recipe!';
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-icon">🍳</div>
-                        <p class="empty-text">还没有食谱哦，和AI聊聊你想做什么菜吧！</p>
+                        <p class="empty-text">${emptyMsg}</p>
                     </div>
                 `;
                 return;
             }
 
-            container.innerHTML = recipes.map(recipe => `
-                <div class="recipe-card" onclick="showRecipeDetail('${recipe.id}')">
-                    <img class="recipe-image" src="${recipe.imageUrl}" alt="${recipe.name}" loading="lazy">
-                    <div class="recipe-content">
-                        <div class="recipe-emoji">${recipe.emoji}</div>
-                        <h3 class="recipe-title">${recipe.name}</h3>
-                        <p class="recipe-desc">${recipe.description}</p>
-                        <div class="recipe-meta">
-                            <span class="meta-tag">⏱️ ${recipe.cookTime}分钟</span>
-                            <span class="meta-tag">📊 ${recipe.difficulty}</span>
-                            <span class="meta-tag">👥 ${recipe.servings}人份</span>
-                        </div>
-                        <div class="recipe-footer">
-                            <span class="recipe-author">👨‍🍳 ${recipe.author}</span>
-                            <div class="recipe-stats">
-                                <span>❤️ ${recipe.likes || 0}</span>
-                                <span>👁️ ${recipe.views || 0}</span>
+            const timeUnit = currentLanguage === 'zh' ? '分钟' : ' min';
+            const servingUnit = currentLanguage === 'zh' ? '人份' : ' servings';
+
+            container.innerHTML = recipes.map(recipe => {
+                const name = getLocalizedField(recipe, 'name');
+                const description = getLocalizedField(recipe, 'description');
+                const difficulty = getLocalizedField(recipe, 'difficulty');
+                const author = getLocalizedField(recipe, 'author');
+
+                return `
+                    <div class="recipe-card" onclick="showRecipeDetail('${recipe.id}')">
+                        <img class="recipe-image" src="${recipe.imageUrl}" alt="${name}" loading="lazy">
+                        <div class="recipe-content">
+                            <div class="recipe-emoji">${recipe.emoji}</div>
+                            <h3 class="recipe-title">${name}</h3>
+                            <p class="recipe-desc">${description}</p>
+                            <div class="recipe-meta">
+                                <span class="meta-tag">⏱️ ${recipe.cookTime}${timeUnit}</span>
+                                <span class="meta-tag">📊 ${difficulty}</span>
+                                <span class="meta-tag">👥 ${recipe.servings}${servingUnit}</span>
+                            </div>
+                            <div class="recipe-footer">
+                                <span class="recipe-author">👨‍🍳 ${author}</span>
+                                <div class="recipe-stats">
+                                    <span>❤️ ${recipe.likes || 0}</span>
+                                    <span>👁️ ${recipe.views || 0}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
+
+            console.log('[Render] Recipes rendered successfully');
         }
 
         function handleChatKeypress(event) {
@@ -1083,7 +1226,10 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ userMessage: message })
+                    body: JSON.stringify({
+                        userMessage: message,
+                        language: currentLanguage  // Tell server which language to use
+                    })
                 });
 
                 const data = await response.json();
@@ -1126,6 +1272,8 @@
                 `;
 
                 if (recommendations && recommendations.length > 0) {
+                    const existingText = i18n.t('existing');
+                    const generateText = i18n.t('generateNew');
                     content += `
                         <div class="recommendations">
                             ${recommendations.map(rec => `
@@ -1133,7 +1281,7 @@
                                     <div class="rec-name">${escapeHtml(rec.name)}</div>
                                     <div class="rec-reason">${escapeHtml(rec.reason)}</div>
                                     <span class="rec-badge ${rec.isExisting ? 'existing' : 'new'}">
-                                        ${rec.isExisting ? '已有' : '生成新'}
+                                        ${rec.isExisting ? existingText : generateText}
                                     </span>
                                 </div>
                             `).join('')}
@@ -1187,11 +1335,13 @@
 
         async function generateRecipe(dishName) {
             const container = document.getElementById('allRecipes');
+            const generatingText = i18n.t('generatingRecipe').replace('{0}', dishName);
+            const timeText = i18n.t('generatingTime');
             container.innerHTML = `
                 <div class="loading">
                     <div class="loading-spinner"></div>
-                    <p class="loading-text">AI正在为您生成"${dishName}"的吉卜力风格食谱...</p>
-                    <p style="text-align: center; color: #999; margin-top: 10px;">这可能需要30-60秒，请耐心等待</p>
+                    <p class="loading-text">${generatingText}</p>
+                    <p style="text-align: center; color: #999; margin-top: 10px;">${timeText}</p>
                 </div>
             `;
 
@@ -1213,14 +1363,11 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    const cachedMsg = currentLanguage === 'zh' ? '找到已有食谱！' : 'Found existing recipe!';
-                    const successMsg = currentLanguage === 'zh' ? '✨ 食谱生成成功！' : '✨ Recipe generated successfully!';
-                    showToast(data.cached ? cachedMsg : successMsg);
+                    showToast(data.cached ? i18n.t('foundExisting') : i18n.t('recipeSuccess'));
                     await loadRecipes();
                     setTimeout(() => showRecipeDetail(data.recipe.id), 500);
                 } else {
-                    const errorMsg = currentLanguage === 'zh' ? '生成失败，请重试' : 'Generation failed, please try again';
-                    showToast(data.error || errorMsg);
+                    showToast(data.error || i18n.t('generateFailed'));
                     await loadRecipes();
                 }
             } catch (error) {
@@ -1242,21 +1389,31 @@
                 console.error('Failed to record view:', error);
             }
 
+            // Get localized fields
+            const name = getLocalizedField(recipe, 'name');
+            const difficulty = getLocalizedField(recipe, 'difficulty');
+            const author = getLocalizedField(recipe, 'author');
+            const ingredients = getLocalizedArray(recipe, 'ingredients');
+            const steps = getLocalizedArray(recipe, 'steps');
+
             document.getElementById('modalImage').src = recipe.imageUrl;
-            document.getElementById('modalTitle').textContent = `${recipe.emoji} ${recipe.name}`;
+            document.getElementById('modalTitle').textContent = `${recipe.emoji} ${name}`;
+
+            const timeUnit = currentLanguage === 'zh' ? '分钟' : ' min';
+            const servingUnit = currentLanguage === 'zh' ? '人份' : ' servings';
 
             document.getElementById('modalMeta').innerHTML = `
-                <span class="meta-tag">⏱️ ${recipe.cookTime}分钟</span>
-                <span class="meta-tag">📊 ${recipe.difficulty}</span>
-                <span class="meta-tag">👥 ${recipe.servings}人份</span>
-                <span class="meta-tag">👨‍🍳 ${recipe.author}</span>
+                <span class="meta-tag">⏱️ ${recipe.cookTime}${timeUnit}</span>
+                <span class="meta-tag">📊 ${difficulty}</span>
+                <span class="meta-tag">👥 ${recipe.servings}${servingUnit}</span>
+                <span class="meta-tag">👨‍🍳 ${author}</span>
             `;
 
-            document.getElementById('modalIngredients').innerHTML = recipe.ingredients
+            document.getElementById('modalIngredients').innerHTML = ingredients
                 .map(ing => `<div class="ingredient-item">${ing}</div>`)
                 .join('');
 
-            document.getElementById('modalSteps').innerHTML = recipe.steps
+            document.getElementById('modalSteps').innerHTML = steps
                 .map((step, index) => {
                     const stepImage = recipe.stepImages && recipe.stepImages[index];
                     return `
@@ -1268,10 +1425,12 @@
                 })
                 .join('');
 
-            if (recipe.tips) {
+            const tips = getLocalizedField(recipe, 'tips');
+            if (tips) {
+                const tipsLabel = currentLanguage === 'zh' ? '💡 烹饪小贴士：' : '💡 Cooking Tips:';
                 document.getElementById('modalTips').innerHTML = `
                     <div class="tips-box">
-                        <strong>💡 烹饪小贴士：</strong> ${recipe.tips}
+                        <strong>${tipsLabel}</strong> ${tips}
                     </div>
                 `;
             } else {
@@ -1343,7 +1502,13 @@
             return div.innerHTML;
         }
 
-        initApp();
+        // Wait for DOM and i18n to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            // DOM is already ready, but wait a bit for i18n.js to load
+            setTimeout(initApp, 0);
+        }
     </script>
 </body>
 </html>

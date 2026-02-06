@@ -70,7 +70,7 @@ function writeRecipes(recipes) {
 
 initDataFiles();
 
-console.log('✨ Ghibli Recipe Server running on http://localhost:' + PORT);
+console.log('✨ Magic Comic Kitchen Server running on http://localhost:' + PORT);
 console.log('🎨 API Key configured:', !!process.env.AI_GATEWAY_API_KEY ? 'Yes' : 'No');
 
 // 实际生成逻辑 - 注入到队列管理器
@@ -80,44 +80,35 @@ generationQueue.generateRecipe = async function(dishName, language = 'zh') {
         throw new Error('AI_GATEWAY_API_KEY not configured');
     }
 
-    // Generate recipe content with language-specific prompts
-    const prompts = {
-        zh: `请为"${dishName}"生成一份详细的中文食谱。
-
-请以JSON格式返回，包含以下字段：
-{
-  "name": "菜名",
-  "description": "一句话简介（20字以内）",
-  "emoji": "合适的emoji表情",
-  "cookTime": 烹饪时间（分钟，数字）,
-  "difficulty": "简单/中等/困难",
-  "servings": 几人份（数字）,
-  "ingredients": ["食材1 用量", "食材2 用量"],
-  "steps": ["步骤1的详细描述", "步骤2的详细描述"],
-  "tips": "烹饪小贴士"
-}
-
-每个步骤的描述要详细，包含具体的动作和状态，方便生成漫画插图。只返回JSON，不要其他内容。`,
-
-        en: `Generate a detailed recipe for "${dishName}" in English.
+    // Generate BILINGUAL recipe content (both Chinese and English)
+    const bilingualPrompt = `Generate a BILINGUAL recipe for "${dishName}" with both Chinese and English content.
 
 Return in JSON format with the following fields:
 {
-  "name": "Dish name",
-  "description": "One-line description (under 50 characters)",
-  "emoji": "Appropriate emoji",
+  "name_zh": "中文菜名",
+  "name_en": "English Dish Name",
+  "description_zh": "中文简介（20字以内）",
+  "description_en": "English description (under 50 characters)",
+  "emoji": "🍜",
   "cookTime": cooking time in minutes (number),
-  "difficulty": "Easy/Medium/Hard",
+  "difficulty_zh": "简单/中等/困难",
+  "difficulty_en": "Easy/Medium/Hard",
   "servings": number of servings (number),
-  "ingredients": ["Ingredient 1 with amount", "Ingredient 2 with amount"],
-  "steps": ["Detailed description of step 1", "Detailed description of step 2"],
-  "tips": "Cooking tips and tricks"
+  "ingredients_zh": ["食材1 用量", "食材2 用量"],
+  "ingredients_en": ["Ingredient 1 with amount", "Ingredient 2 with amount"],
+  "steps_zh": ["步骤1的详细中文描述", "步骤2的详细中文描述"],
+  "steps_en": ["Detailed English description of step 1", "Detailed English description of step 2"],
+  "tips_zh": "中文烹饪小贴士",
+  "tips_en": "English cooking tips"
 }
 
-Each step should be detailed with specific actions and states for comic illustration. Return ONLY JSON, no other content.`
-    };
+IMPORTANT:
+- Provide BOTH Chinese (_zh) and English (_en) versions for all text fields
+- Each step should be detailed with specific actions and states for comic illustration
+- Return ONLY JSON, no other content
+- Make sure the translations are accurate and natural`;
 
-    const recipePrompt = prompts[language] || prompts.zh;
+    const recipePrompt = bilingualPrompt;
 
     const recipeResponse = await axios.post(
         'https://ai-gateway.happycapy.ai/api/v1/chat/completions',
@@ -143,15 +134,11 @@ Each step should be detailed with specific actions and states for comic illustra
         throw new Error('Failed to parse recipe JSON');
     }
 
-    console.log(`✓ Recipe content generated with ${recipeData.steps.length} steps (${language})`);
+    console.log(`✓ Bilingual recipe content generated with ${recipeData.steps_zh.length} steps`);
 
-    // Generate main dish image with language-specific settings
-    const kitchenSettings = {
-        zh: 'traditional Chinese kitchen setting with wooden utensils and bamboo steamers',
-        en: 'modern North American kitchen setting with stainless steel appliances and granite countertops'
-    };
-
-    const mainImagePrompt = `A beautiful Studio Ghibli style illustration of the finished ${dishName}, featuring the completed dish with warm, inviting colors and soft lighting. The scene should have a cozy, hand-painted aesthetic with detailed food presentation, steam rising from the dish, and a magical, whimsical atmosphere. Watercolor style with rich textures and dreamy ambiance, ${kitchenSettings[language] || kitchenSettings.en}.`;
+    // Generate main dish image (use English name for prompt)
+    const dishNameForImage = recipeData.name_en || dishName;
+    const mainImagePrompt = `A beautiful Studio Ghibli style illustration of the finished ${dishNameForImage}, featuring the completed dish with warm, inviting colors and soft lighting. The scene should have a cozy, hand-painted aesthetic with detailed food presentation, steam rising from the dish, and a magical, whimsical atmosphere. Watercolor style with rich textures and dreamy ambiance.`;
 
     const mainImageResponse = await axios.post(
         'https://ai-gateway.happycapy.ai/api/v1/images/generations',
@@ -172,15 +159,16 @@ Each step should be detailed with specific actions and states for comic illustra
     const imageUrl = mainImageResponse.data.data[0].url;
     console.log('  ✓ Main dish image generated');
 
-    // Generate step-by-step comic images
+    // Generate step-by-step comic images (use English steps for prompts)
     const stepImages = [];
-    const maxSteps = Math.min(recipeData.steps.length, 8); // Limit to max 8 steps
+    const stepsForImages = recipeData.steps_en || recipeData.steps_zh;
+    const maxSteps = Math.min(stepsForImages.length, 8); // Limit to max 8 steps
 
     for (let i = 0; i < maxSteps; i++) {
-        const step = recipeData.steps[i];
+        const step = stepsForImages[i];
         console.log(`  🎨 Generating image for step ${i + 1}/${maxSteps}...`);
 
-        const stepPrompt = `A Studio Ghibli style comic panel illustration showing step ${i + 1} of cooking ${dishName}: "${step}". The scene should show hands performing the cooking action in a warm, cozy kitchen. Hand-painted watercolor style with soft lighting, showing the ingredients and cooking process clearly. The illustration should be like a cooking manga panel with a magical, whimsical Ghibli atmosphere. Focus on the specific action described in the step.`;
+        const stepPrompt = `A Studio Ghibli style comic panel illustration showing step ${i + 1} of cooking ${dishNameForImage}: "${step}". The scene should show hands performing the cooking action in a warm, cozy kitchen. Hand-painted watercolor style with soft lighting, showing the ingredients and cooking process clearly. The illustration should be like a cooking manga panel with a magical, whimsical Ghibli atmosphere. Focus on the specific action described in the step.`;
 
         try {
             const stepImageResponse = await axios.post(
@@ -212,25 +200,20 @@ Each step should be detailed with specific actions and states for comic illustra
     }
 
     // Add null for any remaining steps that were skipped
-    for (let i = maxSteps; i < recipeData.steps.length; i++) {
+    for (let i = maxSteps; i < stepsForImages.length; i++) {
         stepImages.push(null);
     }
 
     console.log('✅ All images generated successfully');
 
-    // Create recipe object
-    const authorNames = {
-        zh: 'AI厨房',
-        en: 'AI Kitchen'
-    };
-
+    // Create bilingual recipe object
     const newRecipe = {
         id: Date.now().toString(),
         ...recipeData,
-        language,
         imageUrl,
         stepImages,
-        author: authorNames[language] || authorNames.zh,
+        author_zh: 'AI厨房',
+        author_en: 'AI Kitchen',
         authorId: 'ai-chef',
         createdAt: new Date().toISOString(),
         likes: 0,
@@ -282,12 +265,23 @@ app.post('/api/recipes/generate', async (req, res) => {
             return res.status(400).json({ error: 'Dish name is required' });
         }
 
-        // Check if recipe already exists (language-specific check)
+        // Check if recipe already exists (bilingual check - match in either language)
         const recipes = readRecipes();
-        const existing = recipes.find(r =>
-            r.name.toLowerCase() === dishName.toLowerCase() &&
-            (r.language || 'zh') === language
-        );
+        const normalizeName = (name) => name.toLowerCase().replace(/\s+/g, '');
+        const normalizedDishName = normalizeName(dishName);
+
+        const existing = recipes.find(r => {
+            // Check new bilingual format
+            if (r.name_zh && r.name_en) {
+                return normalizeName(r.name_zh) === normalizedDishName ||
+                       normalizeName(r.name_en) === normalizedDishName;
+            }
+            // Check old single-language format
+            if (r.name) {
+                return normalizeName(r.name) === normalizedDishName;
+            }
+            return false;
+        });
 
         if (existing) {
             return res.json({ recipe: existing, cached: true });
@@ -350,7 +344,7 @@ app.get('/api/queue/status', (req, res) => {
 // Get recipe recommendations
 app.post('/api/recipes/recommend', async (req, res) => {
     try {
-        const { userMessage } = req.body;
+        const { userMessage, language = 'zh' } = req.body;
 
         if (!userMessage) {
             return res.status(400).json({ error: 'User message is required' });
@@ -362,9 +356,44 @@ app.post('/api/recipes/recommend', async (req, res) => {
         }
 
         const recipes = readRecipes();
-        const recipeNames = recipes.map(r => r.name).join('、');
 
-        const prompt = `用户说："${userMessage}"
+        // Get recipe names in the appropriate language
+        const recipeNames = recipes.map(r => {
+            if (language === 'en') {
+                return r.name_en || r.name || '';
+            } else {
+                return r.name_zh || r.name || '';
+            }
+        }).filter(name => name).join(language === 'en' ? ', ' : '、');
+
+        // Create prompt based on user's language
+        let prompt;
+        if (language === 'en') {
+            prompt = `CRITICAL INSTRUCTION: You MUST respond in ENGLISH ONLY. The user is using English interface.
+
+User said: "${userMessage}"
+
+Existing recipe library: ${recipeNames || '(No recipes yet)'}
+
+Based on the user's description, recommend 3-5 relevant dishes. If there are matching recipes in the library, prioritize recommending existing ones. If not, recommend new dishes.
+
+IMPORTANT: ALL dish names, reasons, and responses MUST be in ENGLISH.
+
+Return in JSON format:
+{
+  "recommendations": [
+    {
+      "name": "English dish name",
+      "reason": "Recommendation reason in English (under 50 characters)",
+      "isExisting": true/false
+    }
+  ],
+  "response": "Friendly reply to user in English (under 100 characters)"
+}
+
+Return ONLY JSON, no other content. Remember: ENGLISH ONLY!`;
+        } else {
+            prompt = `用户说："${userMessage}"
 
 现有食谱库：${recipeNames || '(暂无食谱)'}
 
@@ -383,6 +412,7 @@ app.post('/api/recipes/recommend', async (req, res) => {
 }
 
 只返回JSON，不要其他内容。`;
+        }
 
         const aiResponse = await axios.post(
             'https://ai-gateway.happycapy.ai/api/v1/chat/completions',
@@ -410,9 +440,24 @@ app.post('/api/recipes/recommend', async (req, res) => {
         }
 
         const enrichedRecommendations = recommendData.recommendations.map(rec => {
-            const existingRecipe = recipes.find(r =>
-                r.name.includes(rec.name) || rec.name.includes(r.name)
-            );
+            // Match recipe name in both languages
+            // Normalize names for better matching (remove spaces, lowercase)
+            const normalize = (str) => str.toLowerCase().replace(/\s+/g, '');
+            const recNorm = normalize(rec.name);
+
+            const existingRecipe = recipes.find(r => {
+                // Check bilingual fields
+                const nameZh = r.name_zh || r.name || '';
+                const nameEn = r.name_en || r.name || '';
+
+                // Normalize all names
+                const zhNorm = normalize(nameZh);
+                const enNorm = normalize(nameEn);
+
+                // Check if names match (with or without spaces)
+                return zhNorm.includes(recNorm) || recNorm.includes(zhNorm) ||
+                       enNorm.includes(recNorm) || recNorm.includes(enNorm);
+            });
 
             return {
                 ...rec,
