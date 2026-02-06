@@ -941,7 +941,7 @@
     </div>
 
     <!-- Load i18n first -->
-    <script src="/i18n.js?v=20260206-5"></script>
+    <script src="/i18n.js?v=20260206-6"></script>
 
     <script>
         let currentRecipeId = null;
@@ -1276,15 +1276,24 @@
                     const generateText = i18n.t('generateNew');
                     content += `
                         <div class="recommendations">
-                            ${recommendations.map(rec => `
-                                <div class="recommendation-card" onclick='handleRecommendationClick(${JSON.stringify(rec)})'>
-                                    <div class="rec-name">${escapeHtml(rec.name)}</div>
-                                    <div class="rec-reason">${escapeHtml(rec.reason)}</div>
-                                    <span class="rec-badge ${rec.isExisting ? 'existing' : 'new'}">
-                                        ${rec.isExisting ? existingText : generateText}
-                                    </span>
-                                </div>
-                            `).join('')}
+                            ${recommendations.map(rec => {
+                                // Create a minimal object with only necessary data
+                                const recipeId = rec.recipe ? rec.recipe.id : null;
+                                const recData = {
+                                    name: rec.name,
+                                    isExisting: rec.isExisting,
+                                    recipeId: recipeId
+                                };
+                                return `
+                                    <div class="recommendation-card" onclick='handleRecommendationClick(${JSON.stringify(recData)})'>
+                                        <div class="rec-name">${escapeHtml(rec.name)}</div>
+                                        <div class="rec-reason">${escapeHtml(rec.reason)}</div>
+                                        <span class="rec-badge ${rec.isExisting ? 'existing' : 'new'}">
+                                            ${rec.isExisting ? existingText : generateText}
+                                        </span>
+                                    </div>
+                                `;
+                            }).join('')}
                         </div>
                     `;
                 }
@@ -1324,9 +1333,9 @@
         }
 
         async function handleRecommendationClick(rec) {
-            if (rec.isExisting && rec.recipe) {
+            if (rec.isExisting && rec.recipeId) {
                 // Show existing recipe
-                showRecipeDetail(rec.recipe.id);
+                showRecipeDetail(rec.recipeId);
             } else {
                 // Generate new recipe
                 await generateRecipe(rec.name);
