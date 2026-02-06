@@ -803,9 +803,61 @@
                 transform: translateY(-10px);
             }
         }
+
+        /* Language Switcher */
+        .lang-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .lang-btn {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--ghibli-green);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--ghibli-brown);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .lang-btn:hover {
+            background: var(--ghibli-green);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(127, 176, 105, 0.3);
+        }
+
+        .lang-btn.active {
+            background: var(--ghibli-green);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .lang-switcher {
+                top: 10px;
+                right: 10px;
+            }
+
+            .lang-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Language Switcher -->
+    <div class="lang-switcher">
+        <button class="lang-btn active" onclick="switchLanguage('zh')" id="btn-zh">中文</button>
+        <button class="lang-btn" onclick="switchLanguage('en')" id="btn-en">English</button>
+    </div>
     <div class="leaf">🍃</div>
     <div class="leaf">🌿</div>
     <div class="leaf">🍂</div>
@@ -888,13 +940,63 @@
         </div>
     </div>
 
+    <!-- Load i18n first -->
+    <script src="/i18n.js"></script>
+
     <script>
         let currentRecipeId = null;
         let allRecipes = [];
         let isGenerating = false;
         const API_BASE = '';
+        let currentLanguage = 'zh';
+
+        // Language Switching
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            i18n.setLanguage(lang);
+
+            // Update button states
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`btn-${lang}`).classList.add('active');
+
+            // Update UI text
+            updateUIText();
+
+            // Reload recipes to show correct language
+            loadRecipes();
+        }
+
+        function updateUIText() {
+            // Update header
+            document.querySelector('.logo').textContent = i18n.t('siteTitle');
+            document.querySelector('.tagline').textContent = i18n.t('siteSubtitle');
+
+            // Update chat interface
+            document.querySelector('.chat-title').textContent = '💬 ' +
+                (currentLanguage === 'zh' ? '和AI聊聊你想做什么菜' : 'Chat with AI about what to cook');
+            document.querySelector('.chat-subtitle').textContent =
+                (currentLanguage === 'zh' ? '告诉我你的想法，我会为你推荐美味的食谱' : 'Tell me your thoughts, and I\'ll recommend delicious recipes');
+
+            // Update welcome message
+            const welcomeMsg = document.querySelector('.message-ai .message-bubble');
+            if (welcomeMsg) {
+                welcomeMsg.innerHTML = i18n.t('welcomeMessage');
+            }
+
+            // Update input placeholder
+            document.getElementById('chatInput').placeholder = i18n.t('chatPlaceholder');
+            document.getElementById('sendBtn').textContent = i18n.t('sendButton');
+        }
 
         async function initApp() {
+            // Initialize language from localStorage
+            currentLanguage = i18n.getCurrentLanguage();
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${currentLanguage}`).classList.add('active');
+            updateUIText();
+
             await loadRecipes();
         }
 
@@ -1102,17 +1204,23 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ dishName })
+                    body: JSON.stringify({
+                        dishName,
+                        language: currentLanguage
+                    })
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    showToast(data.cached ? '找到已有食谱！' : '✨ 食谱生成成功！');
+                    const cachedMsg = currentLanguage === 'zh' ? '找到已有食谱！' : 'Found existing recipe!';
+                    const successMsg = currentLanguage === 'zh' ? '✨ 食谱生成成功！' : '✨ Recipe generated successfully!';
+                    showToast(data.cached ? cachedMsg : successMsg);
                     await loadRecipes();
                     setTimeout(() => showRecipeDetail(data.recipe.id), 500);
                 } else {
-                    showToast(data.error || '生成失败，请重试');
+                    const errorMsg = currentLanguage === 'zh' ? '生成失败，请重试' : 'Generation failed, please try again';
+                    showToast(data.error || errorMsg);
                     await loadRecipes();
                 }
             } catch (error) {

@@ -2898,5 +2898,61 @@
     "createdAt": "2026-02-05T17:07:07.833Z",
     "likes": 0,
     "views": 1
+  },
+  {
+    "id": "1770347759518",
+    "name": "Classic Mac and Cheese",
+    "description": "Creamy, cheesy comfort food perfection",
+    "emoji": "🧀",
+    "cookTime": 25,
+    "difficulty": "Easy",
+    "servings": 4,
+    "ingredients": [
+      "8 oz elbow macaroni pasta",
+      "2 tablespoons butter",
+      "2 tablespoons all-purpose flour",
+      "2 cups whole milk",
+      "8 oz sharp cheddar cheese, grated",
+      "4 oz cream cheese, cubed",
+      "1/2 teaspoon salt",
+      "1/4 teaspoon black pepper",
+      "1/4 teaspoon paprika",
+      "1/2 cup panko breadcrumbs",
+      "2 tablespoons melted butter for topping"
+    ],
+    "steps": [
+      "Preheat oven to 375°F and grease a 9x13 inch baking dish. Bring a large pot of salted water to a rolling boil, showing vigorous bubbles breaking the surface.",
+      "Add elbow macaroni to the boiling water and cook for 8-10 minutes until al dente, stirring occasionally to prevent sticking. Steam should be rising from the pot.",
+      "While pasta cooks, melt 2 tablespoons butter in a medium saucepan over medium heat until it foams and becomes fragrant.",
+      "Whisk flour into the melted butter continuously for 1 minute, creating a smooth, golden paste called a roux that bubbles gently.",
+      "Gradually pour in milk while whisking constantly to prevent lumps, creating a smooth mixture that thickens as it heats and begins to simmer.",
+      "Add cream cheese cubes to the milk mixture and whisk until completely melted and incorporated, creating a silky base sauce.",
+      "Remove saucepan from heat and gradually stir in grated cheddar cheese, salt, pepper, and paprika until the cheese melts into a smooth, glossy sauce.",
+      "Drain the cooked pasta thoroughly in a colander, shaking off excess water, then combine with cheese sauce in a large mixing bowl until evenly coated.",
+      "Transfer the mac and cheese mixture to the prepared baking dish, spreading it evenly with a spoon so the surface is level.",
+      "Mix panko breadcrumbs with 2 tablespoons melted butter until evenly moistened, then sprinkle over the mac and cheese for a golden topping.",
+      "Bake for 15-20 minutes until the top is golden brown and the edges are bubbling, then remove and let cool for 5 minutes before serving."
+    ],
+    "tips": "Use freshly grated cheese for better melting. Don't overcook the pasta as it will continue cooking in the oven. For extra richness, substitute half the milk with heavy cream. Let it rest briefly after baking to set properly.",
+    "language": "en",
+    "imageUrl": "https://ai-gateway-resource.trickle-lab.tech/images/1770347569768-107f3f10-edb3-484a-a21c-6535502715c0-0.png",
+    "stepImages": [
+      "https://ai-gateway-resource.trickle-lab.tech/images/1770347592501-1ac66b1b-ecf8-4693-8afb-16cde7d95c39-0.png",
+      "https://ai-gateway-resource.trickle-lab.tech/images/1770347623003-bdf50170-e0a6-4b3b-b1d7-a71831d1f2ed-0.png",
+      "https://ai-gateway-resource.trickle-lab.tech/images/1770347644185-cf6e9b60-d317-41bb-9459-fa9cefe2ecde-0.png",
+      "https://ai-gateway-resource.trickle-lab.tech/images/1770347666910-56828f0a-797a-4e6a-a39d-89e90a215192-0.png",
+      "https://ai-gateway-resource.trickle-lab.tech/images/1770347689961-42c12d6a-d428-4ff9-91b3-7233a1f839d1-0.png",
+      "https://ai-gateway-resource.trickle-lab.tech/images/1770347711147-8b98d50c-9ee4-4fa8-98a9-7c9fcf98c0e2-0.png",
+      "https://ai-gateway-resource.trickle-lab.tech/images/1770347733932-07b80c5e-f31f-4c03-ae2c-1a60fd16ebd3-0.png",
+      "https://ai-gateway-resource.trickle-lab.tech/images/1770347757725-5d4c1051-fe9f-48be-bc0b-128d960ab93e-0.png",
+      null,
+      null,
+      null
+    ],
+    "author": "AI Kitchen",
+    "authorId": "ai-chef",
+    "createdAt": "2026-02-06T03:15:59.518Z",
+    "likes": 0,
+    "views": 0
   }
 ]
